@@ -5,13 +5,24 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
 
+/**
+ *Класс для вычисления выражений
+ */
 public class CalculatingExpressions {
     private final Map<String, Double> variables;
     private final Scanner inputScanner;
 
+    /**
+     * Конструктор по умолчанию
+     */
     public CalculatingExpressions() {
         this(new Scanner(System.in));
     }
+
+    /**
+     *Конструктор для получения пользовательского ввода
+     * @param scanner для получения пользовательского ввода
+     */
     public CalculatingExpressions(Scanner scanner) {
         this.variables = new HashMap<>();
         this.inputScanner = scanner;
@@ -19,6 +30,11 @@ public class CalculatingExpressions {
         variables.put("E", Math.E);
     }
 
+    /**
+     * Устанавливает значение переменной
+     * @param name имя переменной
+     * @param value значение
+     */
     public void setVariable(String name, double value) {
         if (!name.matches("[a-zA-Z][a-zA-Z0-9]*")) {
             throw new IllegalArgumentException("Некорректное имя переменной: " + name);
@@ -26,6 +42,11 @@ public class CalculatingExpressions {
         variables.put(name, value);
     }
 
+    /**
+     * Вычисление математических выражений
+     * @param expression выражение в виде строки
+     * @return результат выражения
+     */
     public double Calculate(String expression) {
         expression = expression.replaceAll("\\s+", "");
         expression = expression.replaceAll("(?<=^|[(+\\-*/%^])-", "0-");
@@ -71,6 +92,13 @@ public class CalculatingExpressions {
         return numbers.pop();
     }
 
+    /**
+     *Обработка числа в выражении и добавление его в стек
+     * @param expr выражение строкой
+     * @param index индекс текущего символа
+     * @param nums стек для хранения чисел
+     * @return новый индекс после обработки
+     */
     private int processNumber(String expr, int index, Stack<Double> nums) {
         StringBuilder numStr = new StringBuilder();
         boolean isNegative = false;
@@ -100,6 +128,13 @@ public class CalculatingExpressions {
         return index - 1;
     }
 
+    /**
+     *  Обрабатывает переменную в выражении и ее значение в стек
+     * @param expr выражение
+     * @param index индекс текущего выражения
+     * @param nums стек для хранения чисел
+     * @return новый индекс после обработки
+     */
     private int processVariable(String expr, int index, Stack<Double> nums) {
         StringBuilder varName = new StringBuilder();
         while (index < expr.length() && Character.isLetterOrDigit(expr.charAt(index))) {
@@ -118,14 +153,31 @@ public class CalculatingExpressions {
         return index - 1;
     }
 
+    /**
+     * Проверяет, является ли текущий символ унарным минусом.
+     * @param expression выражение
+     * @param index индекс текущего символа
+     * @return true если унарный минус, иначе false
+     */
     private boolean isUnaryMinus(String expression, int index) {
         return index == 0 || expression.charAt(index - 1) == '(' || isOperator(expression.charAt(index - 1));
     }
 
+    /**
+     * Проверяет, является ли символ оператором.
+     * @param symbol символ для проверки
+     * @return true если является, иначе false
+     */
     private boolean isOperator(char symbol) {
         return symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' || symbol == '^' || symbol == '%';
     }
 
+    /**
+     * Сравнивает приоритет двух операторов.
+     * @param op1 первый оператор
+     * @param op2 второй оператор
+     * @return true если у первого приоритет выше, иначе false
+     */
     private boolean operatorHigherPrecedence(char op1, char op2) {
         if (op1 == '^' && op2 == '^') {
             return false;
@@ -135,6 +187,11 @@ public class CalculatingExpressions {
         return false;
     }
 
+    /**
+     * Выполняет арифметическую операцию с двумя числами из стека и помещает результат обратно в стек.
+     * @param numbers стек чисел
+     * @param operators стек операторов
+     */
     private void calculatingOperation(Stack<Double> numbers, Stack<Character> operators) {
         if (numbers.size() < 2 || operators.isEmpty()) {
             throw new IllegalArgumentException("Некорректное выражение");
@@ -173,6 +230,9 @@ public class CalculatingExpressions {
         numbers.push(result);
     }
 
+    /**
+     * Закрытие сканера
+     */
     public void close() {
         inputScanner.close();
     }
