@@ -10,8 +10,11 @@ public class CalculatingExpressions {
     private final Scanner inputScanner;
 
     public CalculatingExpressions() {
+        this(new Scanner(System.in));
+    }
+    public CalculatingExpressions(Scanner scanner) {
         this.variables = new HashMap<>();
-        this.inputScanner = new Scanner(System.in);
+        this.inputScanner = scanner;
         variables.put("PI", Math.PI);
         variables.put("E", Math.E);
     }
@@ -25,6 +28,7 @@ public class CalculatingExpressions {
 
     public double Calculate(String expression) {
         expression = expression.replaceAll("\\s+", "");
+        expression = expression.replaceAll("(?<=^|[(+\\-*/%^])-", "0-");
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
 
@@ -69,14 +73,30 @@ public class CalculatingExpressions {
 
     private int processNumber(String expr, int index, Stack<Double> nums) {
         StringBuilder numStr = new StringBuilder();
-        if (expr.charAt(index) == '-') {
-            numStr.append('-');
+        boolean isNegative = false;
+
+        // Обработка унарного минуса
+        if (expr.charAt(index) == '-' && isUnaryMinus(expr, index)) {
+            isNegative = true;
             index++;
         }
+
+        // Проверяем, что после минуса идет цифра или точка
+        if (index >= expr.length() || (!Character.isDigit(expr.charAt(index)) && expr.charAt(index) != '.')) {
+            throw new IllegalArgumentException("Некорректное число после унарного минуса");
+        }
+
+        // Собираем цифры и точки
         while (index < expr.length() && (Character.isDigit(expr.charAt(index)) || expr.charAt(index) == '.')) {
             numStr.append(expr.charAt(index++));
         }
-        nums.push(Double.parseDouble(numStr.toString()));
+
+        double number = Double.parseDouble(numStr.toString());
+        if (isNegative) {
+            number = -number;
+        }
+
+        nums.push(number);
         return index - 1;
     }
 
@@ -107,7 +127,10 @@ public class CalculatingExpressions {
     }
 
     private boolean operatorHigherPrecedence(char op1, char op2) {
-        if (op1 == '^') return true; // Степень имеет наивысший приоритет
+        if (op1 == '^' && op2 == '^') {
+            return false;
+        }
+        if (op1 == '^') return true;
         if ((op1 == '*' || op1 == '/' || op1 == '%') && (op2 == '+' || op2 == '-')) return true;
         return false;
     }
